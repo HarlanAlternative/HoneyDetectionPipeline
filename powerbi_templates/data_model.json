@@ -1,0 +1,171 @@
+{
+  "name": "Honey Quality Analysis",
+  "description": "Data model for honey quality analysis and reporting",
+  "version": "1.0.0",
+  "created_at": "2025-09-04T01:18:28.175456",
+  "tables": [
+    {
+      "name": "honey_quality_data",
+      "description": "Main honey quality measurements",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int",
+          "description": "Unique identifier"
+        },
+        {
+          "name": "batch_id",
+          "type": "string",
+          "description": "Batch identifier"
+        },
+        {
+          "name": "sample_id",
+          "type": "string",
+          "description": "Sample identifier"
+        },
+        {
+          "name": "moisture",
+          "type": "decimal",
+          "description": "Moisture content (%)"
+        },
+        {
+          "name": "ph",
+          "type": "decimal",
+          "description": "pH value"
+        },
+        {
+          "name": "diastase_activity",
+          "type": "decimal",
+          "description": "Diastase activity"
+        },
+        {
+          "name": "h_m_f",
+          "type": "decimal",
+          "description": "Hydroxymethylfurfural content"
+        },
+        {
+          "name": "quality_score",
+          "type": "decimal",
+          "description": "Calculated quality score"
+        },
+        {
+          "name": "quality_category",
+          "type": "string",
+          "description": "Quality category"
+        },
+        {
+          "name": "collection_date",
+          "type": "date",
+          "description": "Sample collection date"
+        },
+        {
+          "name": "lab_id",
+          "type": "string",
+          "description": "Laboratory identifier"
+        },
+        {
+          "name": "analyst",
+          "type": "string",
+          "description": "Analyst name"
+        },
+        {
+          "name": "processed_at",
+          "type": "datetime",
+          "description": "Processing timestamp"
+        }
+      ]
+    },
+    {
+      "name": "quality_metrics",
+      "description": "Aggregated quality metrics",
+      "columns": [
+        {
+          "name": "date",
+          "type": "date",
+          "description": "Date"
+        },
+        {
+          "name": "total_samples",
+          "type": "int",
+          "description": "Total samples processed"
+        },
+        {
+          "name": "avg_quality_score",
+          "type": "decimal",
+          "description": "Average quality score"
+        },
+        {
+          "name": "excellent_count",
+          "type": "int",
+          "description": "Excellent quality samples"
+        },
+        {
+          "name": "good_count",
+          "type": "int",
+          "description": "Good quality samples"
+        },
+        {
+          "name": "fair_count",
+          "type": "int",
+          "description": "Fair quality samples"
+        },
+        {
+          "name": "poor_count",
+          "type": "int",
+          "description": "Poor quality samples"
+        }
+      ]
+    },
+    {
+      "name": "pipeline_status",
+      "description": "ETL pipeline execution status",
+      "columns": [
+        {
+          "name": "pipeline_name",
+          "type": "string",
+          "description": "Pipeline identifier"
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Execution status"
+        },
+        {
+          "name": "start_time",
+          "type": "datetime",
+          "description": "Start timestamp"
+        },
+        {
+          "name": "end_time",
+          "type": "datetime",
+          "description": "End timestamp"
+        },
+        {
+          "name": "duration_seconds",
+          "type": "decimal",
+          "description": "Execution duration"
+        },
+        {
+          "name": "records_processed",
+          "type": "int",
+          "description": "Records processed"
+        },
+        {
+          "name": "error_message",
+          "type": "string",
+          "description": "Error details if failed"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "name": "quality_data_to_metrics",
+      "from_table": "honey_quality_data",
+      "from_column": "collection_date",
+      "to_table": "quality_metrics",
+      "to_column": "date",
+      "type": "many_to_one"
+    }
+  ]
+}

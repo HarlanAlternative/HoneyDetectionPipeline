@@ -1,0 +1,86 @@
+{
+  "database": {
+    "host": "localhost",
+    "port": 5432,
+    "database": "honey_warehouse",
+    "user": "postgres",
+    "password": "password",
+    "pool_size": 10,
+    "max_overflow": 20
+  },
+  "redis": {
+    "host": "localhost",
+    "port": 6379,
+    "db": 0,
+    "password": null,
+    "max_connections": 10
+  },
+  "spark": {
+    "app_name": "HoneyQualityETL",
+    "master": "local[*]",
+    "configs": {
+      "spark.sql.adaptive.enabled": "true",
+      "spark.sql.adaptive.coalescePartitions.enabled": "true",
+      "spark.sql.adaptive.skewJoin.enabled": "true",
+      "spark.sql.adaptive.localShuffleReader.enabled": "true",
+      "spark.sql.adaptive.advisoryPartitionSizeInBytes": "128m",
+      "spark.sql.adaptive.minNumPostShufflePartitions": "1",
+      "spark.sql.adaptive.maxNumPostShufflePartitions": "200",
+      "spark.sql.adaptive.forceApply": "false",
+      "spark.sql.adaptive.logLevel": "info"
+    }
+  },
+  "quality": {
+    "enabled": true,
+    "thresholds": {
+      "completeness": 0.95,
+      "accuracy": 0.90,
+      "consistency": 0.85,
+      "timeliness": 0.98
+    },
+    "business_rules": {
+      "moisture": {
+        "min": 15.0,
+        "max": 20.0,
+        "warning_min": 14.0,
+        "warning_max": 21.0
+      },
+      "ph": {
+        "min": 3.5,
+        "max": 6.5,
+        "warning_min": 3.0,
+        "warning_max": 7.0
+      },
+      "diastase_activity": {
+        "min": 8.0,
+        "warning_min": 6.0
+      },
+      "h_m_f": {
+        "max": 40.0,
+        "warning_max": 50.0
+      }
+    }
+  },
+  "monitoring": {
+    "enabled": true,
+    "metrics": {
+      "collect_pipeline_metrics": true,
+      "collect_data_quality_metrics": true,
+      "collect_performance_metrics": true
+    },
+    "alerts": {
+      "quality_threshold_breach": true,
+      "pipeline_failure": true,
+      "performance_degradation": true
+    }
+  },
+  "powerbi": {
+    "enabled": true,
+    "refresh_schedule": "0 */6 * * *",
+    "data_sources": [
+      "honey_quality_data",
+      "quality_metrics",
+      "pipeline_status"
+    ]
+  }
+}

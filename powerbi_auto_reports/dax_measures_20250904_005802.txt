@@ -1,0 +1,81 @@
+
+# PowerBI DAX Measures for Honey Quality Analysis
+
+## Basic Measures
+```
+Total Samples = COUNTROWS(honey_quality_data)
+
+Average Quality = AVERAGE(honey_quality_data[quality_score])
+
+Premium Rate = 
+DIVIDE(
+    COUNTROWS(FILTER(honey_quality_data, honey_quality_data[quality_category]="Premium")),
+    COUNTROWS(honey_quality_data),
+    0
+)
+
+Compliance Rate = 
+DIVIDE(
+    COUNTROWS(FILTER(honey_quality_data, honey_quality_data[compliance_status]="Compliant")),
+    COUNTROWS(honey_quality_data),
+    0
+)
+```
+
+## Advanced Measures
+```
+Quality Score Trend = 
+CALCULATE(
+    AVERAGE(honey_quality_data[quality_score]),
+    DATESINPERIOD(
+        honey_quality_data[collection_date],
+        LASTDATE(honey_quality_data[collection_date]),
+        -30,
+        DAY
+    )
+)
+
+Premium Quality Count = 
+CALCULATE(
+    COUNTROWS(honey_quality_data),
+    honey_quality_data[quality_category]="Premium"
+)
+
+Lab Performance = 
+CALCULATE(
+    AVERAGE(honey_quality_data[quality_score]),
+    ALLEXCEPT(honey_quality_data, honey_quality_data[lab_id])
+)
+
+Quality Score Variance = 
+VAR AvgScore = AVERAGE(honey_quality_data[quality_score])
+RETURN
+CALCULATE(
+    AVERAGEX(
+        honey_quality_data,
+        POWER(honey_quality_data[quality_score] - AvgScore, 2)
+    )
+)
+```
+
+## Time Intelligence Measures
+```
+Monthly Quality = 
+CALCULATE(
+    AVERAGE(honey_quality_data[quality_score]),
+    DATESMTD(honey_quality_data[collection_date])
+)
+
+Quarterly Trend = 
+CALCULATE(
+    AVERAGE(honey_quality_data[quality_score]),
+    DATESQTD(honey_quality_data[collection_date])
+)
+
+Year over Year = 
+VAR CurrentYear = CALCULATE(AVERAGE(honey_quality_data[quality_score]), YEAR(honey_quality_data[collection_date]))
+VAR PreviousYear = CALCULATE(AVERAGE(honey_quality_data[quality_score]), YEAR(honey_quality_data[collection_date]) - 1)
+RETURN
+DIVIDE(CurrentYear - PreviousYear, PreviousYear, 0)
+```
+        

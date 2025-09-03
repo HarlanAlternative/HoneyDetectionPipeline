@@ -1,0 +1,45 @@
+
+# PowerBI Report Template - Honey Quality Analysis
+# Generated on: 2025-09-04 01:15:52
+
+## Data Source Files
+- CSV: honey_quality_data_20250904_011552.csv
+- Excel: honey_quality_data_20250904_011552.xlsx
+
+## Quick Start Instructions
+1. Open PowerBI Desktop
+2. Click "Get Data" → "Text/CSV" or "Excel"
+3. Select the generated data file
+4. Click "Load"
+5. Create visualizations as described below
+
+## Recommended Visualizations
+
+### 1. KPI Cards
+- Total Samples: 1,000
+- Average Quality Score: 90.88
+- Premium Quality Rate: 38.9%
+- Compliance Rate: 100.0%
+
+### 2. Charts
+- **Bar Chart**: Quality category distribution
+- **Bar Chart**: Laboratory performance comparison
+- **Line Chart**: Quality trends over time
+- **Scatter Plot**: Moisture vs pH correlation
+- **Pie Chart**: Compliance status distribution
+
+## DAX Measures
+```
+Total Samples = COUNTROWS(honey_quality_data)
+Average Quality = AVERAGE(honey_quality_data[quality_score])
+Premium Rate = DIVIDE(
+    COUNTROWS(FILTER(honey_quality_data, honey_quality_data[quality_category]="Premium")),
+    COUNTROWS(honey_quality_data),
+    0
+)
+```
+
+## Data Refresh
+- Set up automatic refresh every 6 hours
+- Use incremental refresh for large datasets
+        

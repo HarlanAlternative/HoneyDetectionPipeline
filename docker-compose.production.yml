@@ -1,0 +1,310 @@
+version: '3.8'
+
+services:
+  # PostgreSQL 数据仓库
+  postgres:
+    image: postgres:15
+    container_name: honey_warehouse
+    environment:
+      POSTGRES_DB: honey_warehouse
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secure_password}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init_scripts:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    networks:
+      - honey_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis 缓存和状态管理
+  redis:
+    image: redis:7-alpine
+    container_name: honey_redis
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-redis_password}
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - honey_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Apache Airflow 工作流编排
+  airflow-webserver:
+    image: apache/airflow:2.8.1
+    container_name: honey_airflow_webserver
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      AIRFLOW__CORE__EXECUTOR: CeleryExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://postgres:${POSTGRES_PASSWORD:-secure_password}@postgres/airflow
+      AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://postgres:${POSTGRES_PASSWORD:-secure_password}@postgres/airflow
+      AIRFLOW__CELERY__BROKER_URL: redis://:${REDIS_PASSWORD:-redis_password}@redis:6379/0
+      AIRFLOW__CORE__FERNET_KEY: ${FERNET_KEY:-}
+      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
+      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+      AIRFLOW__API__AUTH_BACKEND: 'airflow.api.auth.backend.basic_auth'
+      AIRFLOW__WEBSERVER__AUTHENTICATE: 'True'
+      AIRFLOW__WEBSERVER__AUTH_BACKEND: 'airflow.auth.backend.basic_auth'
+      _AIRFLOW_DB_UPGRADE: 'true'
+      _AIRFLOW_WWW_USER_CREATE: 'true'
+      _AIRFLOW_WWW_USER_USERNAME: ${AIRFLOW_USERNAME:-admin}
+      _AIRFLOW_WWW_USER_PASSWORD: ${AIRFLOW_PASSWORD:-admin}
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/logs:/opt/airflow/logs
+      - ./airflow/plugins:/opt/airflow/plugins
+      - ./airflow/config:/opt/airflow/config
+      - ./data:/opt/airflow/data
+    ports:
+      - "8080:8080"
+    networks:
+      - honey_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  airflow-scheduler:
+    image: apache/airflow:2.8.1
+    container_name: honey_airflow_scheduler
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      airflow-webserver:
+        condition: service_healthy
+    environment:
+      AIRFLOW__CORE__EXECUTOR: CeleryExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://postgres:${POSTGRES_PASSWORD:-secure_password}@postgres/airflow
+      AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://postgres:${POSTGRES_PASSWORD:-secure_password}@postgres/airflow
+      AIRFLOW__CELERY__BROKER_URL: redis://:${REDIS_PASSWORD:-redis_password}@redis:6379/0
+      AIRFLOW__CORE__FERNET_KEY: ${FERNET_KEY:-}
+      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/logs:/opt/airflow/logs
+      - ./airflow/plugins:/opt/airflow/plugins
+      - ./airflow/config:/opt/airflow/config
+      - ./data:/opt/airflow/data
+    networks:
+      - honey_network
+    restart: unless-stopped
+
+  airflow-worker:
+    image: apache/airflow:2.8.1
+    container_name: honey_airflow_worker
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      airflow-webserver:
+        condition: service_healthy
+    environment:
+      AIRFLOW__CORE__EXECUTOR: CeleryExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://postgres:${POSTGRES_PASSWORD:-secure_password}@postgres/airflow
+      AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://postgres:${POSTGRES_PASSWORD:-secure_password}@postgres/airflow
+      AIRFLOW__CELERY__BROKER_URL: redis://:${REDIS_PASSWORD:-redis_password}@redis:6379/0
+      AIRFLOW__CORE__FERNET_KEY: ${FERNET_KEY:-}
+      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/logs:/opt/airflow/logs
+      - ./airflow/plugins:/opt/airflow/plugins
+      - ./airflow/config:/opt/airflow/config
+      - ./data:/opt/airflow/data
+    networks:
+      - honey_network
+    restart: unless-stopped
+
+  # Prometheus 监控
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: honey_prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - honey_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Grafana 可视化
+  grafana:
+    image: grafana/grafana:latest
+    container_name: honey_grafana
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards
+    ports:
+      - "3000:3000"
+    networks:
+      - honey_network
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # 数据源模拟服务
+  data-source:
+    image: python:3.10-slim
+    container_name: honey_data_source
+    working_dir: /app
+    volumes:
+      - ./data:/app/data
+      - ./src:/app/src
+    command: >
+      bash -c "
+        pip install pandas numpy openpyxl &&
+        python src/data_processor.py &&
+        tail -f /dev/null
+      "
+    networks:
+      - honey_network
+    restart: unless-stopped
+
+  # ETL 处理服务
+  etl-processor:
+    image: python:3.10-slim
+    container_name: honey_etl_processor
+    working_dir: /app
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: honey_warehouse
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secure_password}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-redis_password}
+    volumes:
+      - ./src:/app/src
+      - ./config:/app/config
+      - ./data:/app/data
+    command: >
+      bash -c "
+        pip install -r requirements.txt &&
+        python src/industrial_etl.py &&
+        tail -f /dev/null
+      "
+    networks:
+      - honey_network
+    restart: unless-stopped
+
+  # PowerBI 数据服务
+  powerbi-service:
+    image: python:3.10-slim
+    container_name: honey_powerbi_service
+    working_dir: /app
+    depends_on:
+      - postgres
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: honey_warehouse
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secure_password}
+    volumes:
+      - ./src:/app/src
+      - ./config:/app/config
+      - ./powerbi_templates:/app/powerbi_templates
+      - ./powerbi_data:/app/powerbi_data
+    command: >
+      bash -c "
+        pip install -r requirements.txt &&
+        python -c 'from src.powerbi_integration import PowerBIIntegration; PowerBIIntegration().generate_powerbi_template()' &&
+        tail -f /dev/null
+      "
+    networks:
+      - honey_network
+    restart: unless-stopped
+
+  # 监控服务
+  monitoring-service:
+    image: python:3.10-slim
+    container_name: honey_monitoring_service
+    working_dir: /app
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: honey_warehouse
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secure_password}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-redis_password}
+    volumes:
+      - ./src:/app/src
+      - ./config:/app/config
+      - ./monitoring_metrics:/app/monitoring_metrics
+    command: >
+      bash -c "
+        pip install -r requirements.txt &&
+        python -c 'from src.monitoring_system import MonitoringSystem; ms = MonitoringSystem(); ms.start_monitoring(); import time; time.sleep(3600)' &&
+        tail -f /dev/null
+      "
+    networks:
+      - honey_network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+networks:
+  honey_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

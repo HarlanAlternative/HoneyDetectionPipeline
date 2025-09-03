@@ -1,0 +1,10 @@
+{
+  "etl": {
+    "status": "failed",
+    "duration_seconds": 0.007691,
+    "rows_processed": 100,
+    "source_path": "data/sample_honey_data.csv",
+    "target_table": "honey_quality_data",
+    "timestamp": "2025-09-04T00:52:12.101203"
+  }
+}

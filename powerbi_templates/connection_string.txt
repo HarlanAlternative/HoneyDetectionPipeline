@@ -1,0 +1,23 @@
+# Database Connection String Template
+
+# PostgreSQL Connection
+Server=localhost;Database=honey_warehouse;Port=5432;Uid=postgres;Pwd=password;
+
+# SQL Server Connection (if using SQL Server)
+Server=localhost;Database=honey_warehouse;Trusted_Connection=true;
+
+# MySQL Connection (if using MySQL)
+Server=localhost;Database=honey_warehouse;Uid=root;Pwd=password;
+
+# Connection Parameters
+- Server: Database server address
+- Database: Database name (honey_warehouse)
+- Port: Database port (default: 5432 for PostgreSQL)
+- Uid: Username
+- Pwd: Password
+- Trusted_Connection: Use Windows authentication (SQL Server)
+
+# Notes
+- Update server address and credentials as needed
+- Ensure database user has read permissions
+- Test connection before using in PowerBI

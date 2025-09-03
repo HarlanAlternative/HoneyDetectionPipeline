@@ -1,0 +1,17 @@
+
+# PowerBI DAX Measures
+
+## Basic Measures
+```
+Total Samples = COUNTROWS(honey_quality_data)
+Average Quality = AVERAGE(honey_quality_data[quality_score])
+Premium Rate = DIVIDE(COUNTROWS(FILTER(honey_quality_data, honey_quality_data[quality_category]="Premium")), COUNTROWS(honey_quality_data), 0)
+Compliance Rate = DIVIDE(COUNTROWS(FILTER(honey_quality_data, honey_quality_data[compliance_status]="Compliant")), COUNTROWS(honey_quality_data), 0)
+```
+
+## Additional Measures
+```
+Lab Performance = CALCULATE(AVERAGE(honey_quality_data[quality_score]), ALLEXCEPT(honey_quality_data, honey_quality_data[lab_id]))
+Monthly Quality = CALCULATE(AVERAGE(honey_quality_data[quality_score]), DATESMTD(honey_quality_data[collection_date]))
+```
+        

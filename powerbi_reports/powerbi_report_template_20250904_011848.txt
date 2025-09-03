@@ -1,0 +1,29 @@
+
+# PowerBI Report Template - Honey Quality Analysis
+# Generated on: 2025-09-04 01:18:48
+
+## Quick Start
+
+### Step 1: Import Data
+1. Open PowerBI Desktop
+2. Click "Get Data" → "Text/CSV" or "Excel"
+3. Select: honey_quality_data_20250904_011848.csv
+4. Click "Load"
+
+### Step 2: Create Charts
+- Quality Distribution: quality_category → Bar Chart
+- Lab Performance: lab_id + quality_score → Bar Chart
+- Time Trends: collection_date + quality_score → Line Chart
+
+## Data Summary
+- Total Samples: 500
+- Average Quality: 90.82
+- Premium Rate: 40.4%
+- Compliance Rate: 100.0%
+
+## Basic Charts
+- KPI Cards: Total Samples, Average Quality, Premium Rate
+- Quality Distribution: Pie Chart
+- Lab Performance: Bar Chart
+- Time Trends: Line Chart
+        

@@ -1,0 +1,56 @@
+# PowerBI Report Template - Honey Quality Analysis
+
+This is a template file for creating PowerBI reports. 
+To use this template:
+
+1. Open PowerBI Desktop
+2. Import the data files from powerbi_data/ directory
+3. Follow the design guide in report_design_guide.md
+
+## Quick Start Guide
+
+### Step 1: Import Data
+- Open PowerBI Desktop
+- Click "Get Data" → "Excel" or "Text/CSV"
+- Select: powerbi_data/honey_quality_data_20250904_003454.xlsx
+- Click "Load"
+
+### Step 2: Create Visualizations
+- **KPI Cards**: Total samples, Average quality score
+- **Bar Chart**: Quality category distribution
+- **Line Chart**: Quality trends over time
+- **Scatter Plot**: Moisture vs pH correlation
+- **Table**: Laboratory performance comparison
+
+### Step 3: Add Filters
+- Date range filter
+- Laboratory filter
+- Quality category filter
+
+### Step 4: Publish
+- Save as .pbix file
+- Publish to PowerBI Service (optional)
+
+## Data Structure
+The imported data contains:
+- 500 honey quality samples
+- Quality scores and categories
+- Laboratory and analyst information
+- Timestamp data for trend analysis
+
+## Sample DAX Measures
+```
+Total Samples = COUNTROWS(honey_quality_data)
+Average Quality = AVERAGE(honey_quality_data[quality_score])
+Excellence Rate = DIVIDE(
+    COUNTROWS(FILTER(honey_quality_data, honey_quality_data[quality_category]="Excellent")),
+    COUNTROWS(honey_quality_data),
+    0
+)
+```
+
+## Notes
+- Data is refreshed every 6 hours
+- Quality thresholds are configurable
+- Supports drill-down analysis
+- Mobile-responsive design recommended
