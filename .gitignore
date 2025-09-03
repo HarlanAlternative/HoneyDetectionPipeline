@@ -87,7 +87,7 @@ src/data/processed/
 *.docx
 *.pdf
 
-# 允许Pictures目录中的图片文件
+
 !Pictures/*.png
 !Pictures/*.jpg
 !Pictures/*.jpeg

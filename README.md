@@ -394,7 +394,7 @@ python3 -c "from src.industrial_etl import IndustrialETLProcessor; print('ETL mo
 - **Quality**: Realistic honey quality parameters
 - **Variation**: Multiple laboratories and regions
 
-## 🔍 Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 1. **Memory Issues**: Reduce sample size or increase system memory
@@ -429,43 +429,7 @@ The pipeline automatically generates realistic honey quality data and processes 
 - `transform_data(data)`: Apply transformations
 - `load_data(data, table_name)`: Load to target system
 
-## Contributing
-
-### Development Setup
-1. Clone the repository
-2. Install dependencies: `pip install -r requirements.txt`
-3. Run tests: `./run_pipeline.sh --demo`
-4. Make changes and test
-5. Submit pull request
-
-### Code Standards
-- Python 3.8+ compatibility
-- Type hints for all functions
-- Comprehensive error handling
-- Clear documentation strings
-- Unit test coverage
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Acknowledgments
-
-- Apache Spark for data processing
-- PowerBI for business intelligence
-- Open source community for libraries and tools
-- Honey industry experts for quality parameters
-
-## Support
-
-For questions and support:
-1. Check the troubleshooting section
-2. Review the API reference
-3. Run the demo mode for examples
-4. Check system status with `./run_pipeline.sh --status`
 
 ---
 
-**Last Updated**: September 2024  
-**Version**: 2.0.0  
-**Status**: Production Ready
+
