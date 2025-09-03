@@ -86,9 +86,11 @@ src/data/processed/
 *.html
 *.docx
 *.pdf
-*.png
-*.jpg
-*.jpeg
+
+# 允许Pictures目录中的图片文件
+!Pictures/*.png
+!Pictures/*.jpg
+!Pictures/*.jpeg
 
 # Airflow
 airflow/logs/
