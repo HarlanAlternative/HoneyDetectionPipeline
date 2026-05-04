@@ -30,8 +30,8 @@ class UnifiedPowerBIGenerator:
         self.output_dir = output_dir
         os.makedirs(self.output_dir, exist_ok=True)
     
-    def generate_sample_data(self, num_records: int = 1000) -> pd.DataFrame:
-        """Generate comprehensive sample data for reporting"""
+    def generate_test_fixture(self, num_records: int = 1000) -> pd.DataFrame:
+        """Generate synthetic fixture data for unit testing only — NOT for analysis"""
         np.random.seed(42)
         
         # Generate time series data
@@ -459,18 +459,18 @@ Premium Rate = DIVIDE(
         """Generate all types of reports"""
         print("Starting automated report generation...")
         
-        # Generate sample data
-        print("Generating sample data...")
-        data = self.generate_sample_data(num_records)
-        
+        # Generate test fixture data (synthetic — for demo only)
+        print("Generating test fixture data...")
+        data = self.generate_test_fixture(num_records)
+
         # Generate Excel report
         print("Generating Excel report...")
         excel_report = self.generate_excel_report(data)
-        
+
         # Generate PowerBI files
         print("Generating PowerBI files...")
         powerbi_files = self.generate_powerbi_files(data)
-        
+
         # Generate summary
         summary = {
             "excel_report": excel_report,
@@ -482,17 +482,17 @@ Premium Rate = DIVIDE(
                 "compliance_rate": len(data[data['compliance_status']=='Compliant']) / len(data) * 100
             }
         }
-        
+
         print("All reports generated successfully!")
         return summary
-    
+
     def generate_complete_powerbi_solution(self, num_records: int = 1000) -> dict:
         """Generate complete PowerBI solution"""
         print("Generating complete PowerBI solution...")
-        
-        # Generate sample data
-        print("Generating sample data...")
-        data = self.generate_sample_data(num_records)
+
+        # Generate test fixture data (synthetic — for demo only)
+        print("Generating test fixture data...")
+        data = self.generate_test_fixture(num_records)
         
         # Create all template files
         print("Creating PowerBI template files...")

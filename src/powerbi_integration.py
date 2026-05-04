@@ -395,8 +395,8 @@ This guide provides recommendations for creating effective PowerBI reports for h
 - Review error logs
 """
     
-    def create_sample_data_for_powerbi(self, num_records: int = 1000) -> pd.DataFrame:
-        """Create sample data for PowerBI testing"""
+    def generate_test_fixture(self, num_records: int = 1000) -> pd.DataFrame:
+        """Generate synthetic fixture data for PowerBI testing only — NOT for analysis"""
         np.random.seed(42)
         
         # Generate sample data
@@ -573,8 +573,8 @@ if __name__ == "__main__":
         # Generate templates
         pbi.generate_powerbi_template()
         
-        # Create sample data
-        sample_data = pbi.create_sample_data_for_powerbi(100)
+        # Create test fixture data
+        sample_data = pbi.generate_test_fixture(100)
         
         # Export to PowerBI format
         export_path = pbi.export_to_powerbi_format(sample_data, "xlsx")
